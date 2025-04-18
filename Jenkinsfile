@@ -4,7 +4,17 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/username/repository.git'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/master']],
+                    userRemoteConfigs: [[
+                        url: 'git@github.com:kain3x6/jenkins-selenium-python.git',
+                        credentialsId: 'github-ssh-key'
+                    ]],
+                    extensions: [
+                        [$class: 'HostKeyVerificationStrategy$NonVerifyingKeyVerificationStrategy']
+                    ]
+                ])
             }
         }
 
@@ -22,10 +32,10 @@ pipeline {
 
         stage('Push to GitHub') {
             when {
-                branch 'main'
+                branch 'master'
             }
             steps {
-                sh 'git push origin main'
+                sh 'git push origin master'
             }
         }
     }
