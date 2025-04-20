@@ -4,15 +4,13 @@ pipeline {
      stages {
          stage('Checkout') {
              steps {
-                sshagent(['github-ssh-key']) {
-                   git 'git@github.com:username/repository.git'
-                }
+                 git 'https://github.com/username/repository.git'
              }
          }
  
          stage('Install Dependencies') {
              steps {
-                 sh 'pytest -v --tb=short tests/'
+                 sh 'pip install -r requirements.txt'
              }
          }
  
