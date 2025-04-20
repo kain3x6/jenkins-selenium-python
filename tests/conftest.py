@@ -14,14 +14,15 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="function")
 def browser_init(request):
-    options = webdriver.ChromeOptions()
     service = Service()
     browser_name = request.config.getoption("browser_name")
 
     if browser_name == "chrome":
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")
         driver = webdriver.Chrome(service=service, options=options)
     elif browser_name == "firefox":
-        driver = webdriver.Firefox(service=service, options=options)
+        driver = webdriver.Firefox(service=service)
     else:
         raise pytest.UsageError(f"Unsupported browser: {browser_name}")
 
