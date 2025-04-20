@@ -18,7 +18,7 @@ pipeline {
 
         stage('Run Selenium Tests') {
             steps {
-                sh 'python -m unittest discover tests'
+                sh 'pytest tests'
             }
         }
     }
