@@ -4,7 +4,10 @@ pipeline {
      stages {
          stage('Checkout') {
              steps {
-                 git 'https://github.com/username/repository.git'
+                sshagent(['github-ssh-key'])
+                  {
+                       git 'git@github.com:username/repository.git'
+                  }
              }
          }
  
