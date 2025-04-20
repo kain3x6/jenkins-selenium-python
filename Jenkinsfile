@@ -18,13 +18,15 @@ pipeline {
         }
 
         stage('Run Selenium Tests') {
-            timeout(time: 10, unit: 'MINUTES') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
                     sh '''
                         Xvfb :99 -screen 0 1920x1080x24 &
                         export DISPLAY=:99
                         pytest tests
                     '''
                 }
+            }
         }
     }
 
