@@ -5,20 +5,21 @@ pipeline {
         stage('Checkout') {
             steps {
                 sshagent(['ssh_key_for_git']) {
-                    git branch: 'master', credentialsId: 'ssh_key_for_git', url: 'git@github.com:kain3x6/jenkins-selenium-python.git'
+                    git credentialsId: 'ssh_key_for_git', url: 'git@github.com:kain3x6/jenkins-selenium-python.git'
                 }
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip3 install -r requirements.txt'
+                sh 'python3 -m pip install --upgrade pip'
+                sh 'python3 -m pip install -r requirements.txt'
             }
         }
 
         stage('Run Selenium Tests') {
             steps {
-                sh 'pytest tests'
+                sh 'python3 -m pytest tests'
             }
         }
     }
