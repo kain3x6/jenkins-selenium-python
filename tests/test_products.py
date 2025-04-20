@@ -7,6 +7,7 @@ class TestProducts:
 
     @pytest.mark.smoke
     @pytest.mark.parametrize("product", ["Brocolli - 1 Kg", 'Cauliflower - 1 Kg'])
+    @pytest.mark.timeout(300)
     def test_add_product(self, product, browser_init):
 
         driver = browser_init
