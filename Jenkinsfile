@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 sshagent(['ssh_key_for_git']) {
-                    credentialsId: 'ssh_key_for_git', url: 'git@github.com:kain3x6/jenkins-selenium-python.git'
+                     credentialsId: 'ssh_key_for_git', url: 'git@github.com:kain3x6/jenkins-selenium-python.git'
                 }
             }
         }
