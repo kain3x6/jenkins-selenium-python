@@ -1,34 +1,33 @@
 import pytest
-import selenium
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.ie.service import Service
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.select import Select
-
-def pytest_addoption(parser):
-    parser.addoption("--browser_name", action="store", default="chrome")
-
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
 
 @pytest.fixture(scope="function")
 def browser_init(request):
-    service = Service()
     browser_name = request.config.getoption("browser_name")
 
     if browser_name == "chrome":
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        service = ChromeService(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
+
     elif browser_name == "firefox":
-        driver = webdriver.Firefox(service=service)
+        options = webdriver.FirefoxOptions()
+        options.add_argument("--headless")
+        service = FirefoxService(GeckoDriverManager().install())
+        driver = webdriver.Firefox(service=service, options=options)
+
     else:
         raise pytest.UsageError(f"Unsupported browser: {browser_name}")
 
     driver.implicitly_wait(5)
-    driver.maximize_window()
+    driver.set_window_size(1920, 1080)  # вместо maximize_window — стабильнее на headless
 
     yield driver
-
     driver.quit()
