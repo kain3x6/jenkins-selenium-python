@@ -5,9 +5,12 @@ from selenium.webdriver.firefox.service import Service as FirefoxService
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
+def pytest_addoption(parser):
+    parser.addoption("--browser_name", action="store", default="chrome")
+
 @pytest.fixture(scope="function")
 def browser_init(request):
-    browser_name = "chrome"
+    browser_name = request.config.getoption("browser_name", default="chrome")
 
     if browser_name == "chrome":
         options = webdriver.ChromeOptions()
@@ -27,7 +30,7 @@ def browser_init(request):
         raise pytest.UsageError(f"Unsupported browser: {browser_name}")
 
     driver.implicitly_wait(5)
-    driver.set_window_size(1920, 1080)  # вместо maximize_window — стабильнее на headless
+    driver.set_window_size(1920, 1080)
 
     yield driver
     driver.quit()
