@@ -17,8 +17,13 @@ def browser_init(request):
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-        service = ChromeService(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=options)
+        # Укажем путь до бинарника Chromium (если Google Chrome не установлен)
+        options.binary_location = "/usr/bin/chromium-browser"
+
+        driver = webdriver.Chrome(
+            service=ChromeService(ChromeDriverManager().install()),
+            options=options
+        )
 
     elif browser_name == "firefox":
         options = webdriver.FirefoxOptions()
