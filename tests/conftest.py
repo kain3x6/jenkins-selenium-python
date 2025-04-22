@@ -7,7 +7,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 
 @pytest.fixture(scope="function")
 def browser_init(request):
-    browser_name = request.config.getoption("browser_name")
+    browser_name = "chrome"
 
     if browser_name == "chrome":
         options = webdriver.ChromeOptions()
