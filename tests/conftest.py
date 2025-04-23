@@ -2,7 +2,8 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
-import os
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
 
 def pytest_addoption(parser):
     parser.addoption("--browser_name", action="store", default="chrome")
@@ -18,14 +19,8 @@ def browser_init(request):
         options.add_argument("--disable-dev-shm-usage")
         options.binary_location = "/usr/bin/google-chrome"
 
-        chrome_driver_path = "/usr/bin/chromedriver"
-
-        if not os.path.exists(chrome_driver_path):
-            raise FileNotFoundError(f"ChromeDriver не найден по пути: {chrome_driver_path}")
-
-        # Логирование для более подробной информации
-        service = ChromeService(executable_path=chrome_driver_path)
-        service.log_path = "chromedriver.log"  # Путь для логов
+        # Использование webdriver-manager для получения пути к chromedriver
+        service = ChromeService(ChromeDriverManager().install())
 
         driver = webdriver.Chrome(
             service=service,
@@ -35,8 +30,12 @@ def browser_init(request):
     elif browser_name == "firefox":
         options = webdriver.FirefoxOptions()
         options.add_argument("--headless")
+        
+        # Использование webdriver-manager для получения пути к geckodriver
+        service = FirefoxService(GeckoDriverManager().install())
+
         driver = webdriver.Firefox(
-            service=FirefoxService("/usr/bin/geckodriver"),
+            service=service,
             options=options
         )
 
