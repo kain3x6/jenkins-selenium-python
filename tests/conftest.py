@@ -23,8 +23,12 @@ def browser_init(request):
         if not os.path.exists(chrome_driver_path):
             raise FileNotFoundError(f"ChromeDriver не найден по пути: {chrome_driver_path}")
 
+        # Логирование для более подробной информации
+        service = ChromeService(executable_path=chrome_driver_path)
+        service.log_path = "chromedriver.log"  # Путь для логов
+
         driver = webdriver.Chrome(
-            service=ChromeService(executable_path=chrome_driver_path),
+            service=service,
             options=options
         )
 
