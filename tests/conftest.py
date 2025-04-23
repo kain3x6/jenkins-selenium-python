@@ -19,10 +19,12 @@ def browser_init(request):
         options.add_argument("--disable-dev-shm-usage")
         options.binary_location = "/usr/bin/google-chrome"  # Путь к установленному Chrome
 
-        driver = webdriver.Chrome(
-            service=ChromeService(executable_path="/usr/bin/chromedriver"),
+        driver = webdriver.Chrome
+        (
+            service=ChromeService(executable_path="/usr/bin/chromedriver"),  # <-- укажи путь
             options=options
         )
+
 
     elif browser_name == "firefox":
         options = webdriver.FirefoxOptions()
