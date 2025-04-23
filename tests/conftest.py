@@ -13,7 +13,7 @@ def browser_init(request):
 
     if browser_name == "chrome":
         options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
+        options.add_argument("--headless=new")  # вместо просто "--headless"
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.binary_location = "/usr/bin/google-chrome"
