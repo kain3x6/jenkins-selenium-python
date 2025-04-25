@@ -24,8 +24,8 @@ pipeline {
                 script {
                     // Установим зависимости внутри контейнера
                     sh '''
-                        docker-compose exec selenium pip install --upgrade pip
-                        docker-compose exec selenium pip install -r /app/requirements.txt
+                        docker-compose exec selenium python3 -m pip install --upgrade pip
+                        docker-compose exec selenium python3 -m pip install -r requirements.txt
                     '''
                 }
             }
