@@ -29,7 +29,7 @@ pipeline {
                     // Установим зависимости внутри контейнера
                     sh '''
                         docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install --upgrade pip"
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install -r requirements.txt"
+                        docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install -r /mnt/requirements.txt"
                     '''
                 }
             }
@@ -40,7 +40,7 @@ pipeline {
                 script {
                     // Запуск тестов внутри контейнера с Selenium
                     sh '''
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "pytest --browser_name=chrome /tests"
+                        docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "pytest --browser_name=chrome /mnt/tests"
                     '''
                 }
             }

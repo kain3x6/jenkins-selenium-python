@@ -1,26 +1,15 @@
-version: '3.8'
-
+version: '3'
 services:
-  # Название контейнера
   selenium:
     image: selenium/standalone-chrome:latest
     ports:
-      - "4444:4444" # Порт для запуска
+      - "4444:4444"
     shm_size: '2g'
     networks:
       - selenium-network
-
-  jenkins:
-    image: jenkins/jenkins:lts
-    ports:
-      - "8080:8080"
     volumes:
-      - jenkins_home:/var/jenkins_home
-    networks:
-      - selenium-network
-
-volumes:
-  jenkins_home:
+      - ./tests:/mnt/tests  # Монтируем папку с тестами в контейнер
+      - ./requirements.txt:/mnt/requirements.txt  # Монтируем requirements.txt
 
 networks:
   selenium-network:
