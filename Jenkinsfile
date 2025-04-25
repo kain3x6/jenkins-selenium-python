@@ -41,8 +41,8 @@ pipeline {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
                         sh '''
-                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install --upgrade pip"
-                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install -r /mnt/requirements.txt"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "python3 -m pip install --upgrade pip"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "python3 -m pip install -r /mnt/requirements.txt"
                         '''
                     }
                 }
@@ -54,7 +54,7 @@ pipeline {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
                         sh '''
-                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "pytest --browser_name=chrome /mnt/tests"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "pytest --browser_name=chrome /mnt/tests"
                         '''
                     }
                 }
