@@ -16,15 +16,11 @@ pipeline {
             }
         }
 
-        stage('Check Files') {
+        stage('Log docker-compose file') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
-                        // Логируем содержимое текущей директории и docker-compose.yml
-                        sh 'echo "Current directory contents:"'
-                        sh 'ls -l'
-                        sh 'echo "Contents of docker-compose.yml:"'
-                        sh 'cat docker-compose.yml'
+                        sh 'cat ${DOCKER_COMPOSE_FILE}'
                     }
                 }
             }
@@ -34,8 +30,7 @@ pipeline {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
-                        // Поднимем контейнеры с Selenium
-                        sh 'docker-compose -f ${DOCKER_COMPOSE_FILE} up -d'  // Запуск контейнеров в фоновом режиме
+                        sh 'sudo docker-compose -f ${DOCKER_COMPOSE_FILE} up -d'
                     }
                 }
             }
@@ -45,10 +40,9 @@ pipeline {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
-                        // Установим зависимости внутри контейнера
                         sh '''
-                            docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install --upgrade pip"
-                            docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install -r /mnt/requirements.txt"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install --upgrade pip"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install -r /mnt/requirements.txt"
                         '''
                     }
                 }
@@ -59,9 +53,8 @@ pipeline {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
-                        // Запуск тестов внутри контейнера с Selenium
                         sh '''
-                            docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "pytest --browser_name=chrome /mnt/tests"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "pytest --browser_name=chrome /mnt/tests"
                         '''
                     }
                 }
@@ -72,8 +65,7 @@ pipeline {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
-                        // Остановим контейнеры после выполнения тестов
-                        sh 'docker-compose -f ${DOCKER_COMPOSE_FILE} down'
+                        sh 'sudo docker-compose -f ${DOCKER_COMPOSE_FILE} down --volumes --remove-orphans'
                     }
                 }
             }
