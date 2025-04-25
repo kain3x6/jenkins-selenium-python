@@ -16,6 +16,20 @@ pipeline {
             }
         }
 
+        stage('Check Files') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    script {
+                        // Логируем содержимое текущей директории и docker-compose.yml
+                        sh 'echo "Current directory contents:"'
+                        sh 'ls -l'
+                        sh 'echo "Contents of docker-compose.yml:"'
+                        sh 'cat docker-compose.yml'
+                    }
+                }
+            }
+        }
+
         stage('Start Selenium Container') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
