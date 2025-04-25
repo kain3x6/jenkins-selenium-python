@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 sshagent(['ssh_key']) {
-                    git credentialsId: 'ssh_key', url: 'git@github.com:kain3x6/jenkins-selenium-python.git'
+                     sh 'git clone git@github.com:kain3x6/jenkins-selenium-python.git'
                 }
             }
         }
