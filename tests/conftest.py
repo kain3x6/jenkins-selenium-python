@@ -1,7 +1,8 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 
 def pytest_addoption(parser):
     parser.addoption("--browser_name", action="store", default="chrome")
@@ -11,24 +12,18 @@ def browser_init(request):
     browser_name = request.config.getoption("browser_name")
 
     if browser_name == "chrome":
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless=new")
+        # Настройка ChromeOptions для работы в headless-режиме в контейнере
+        options = Options()
+        options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
 
-        service = ChromeService(executable_path="/usr/bin/chromedriver")
-        driver = webdriver.Chrome(service=service, options=options)
-
-    # elif browser_name == "firefox":
-    #     options = webdriver.FirefoxOptions()
-    #     options.add_argument("--headless")
-
-    #     service = FirefoxService(GeckoDriverManager().install())
-
-    #     driver = webdriver.Firefox(
-    #         service=service,
-    #         options=options
-    #     )
+        # Указание на URL для подключения к Selenium Grid в контейнере
+        # Внутри Docker контейнера с Selenium этот адрес будет использоваться для связи с браузером
+        driver = webdriver.Remote(
+            command_executor="http://selenium:4444/wd/hub",  # URL к Selenium Server внутри контейнера(где selenium,4444 - это название и порт внутри docker-compose)
+            options=options
+        )
 
     else:
         raise pytest.UsageError(f"Unsupported browser: {browser_name}")

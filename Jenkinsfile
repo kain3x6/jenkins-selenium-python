@@ -10,18 +10,43 @@ pipeline {
             }
         }
 
-        stage('Run Selenium Tests in Docker') {
+        stage('Start Selenium Container') {
             steps {
                 script {
-                    // Запускаем Docker контейнер с Selenium, в котором уже установлен Chrome и ChromeDriver
-                    docker.image('selenium/standalone-chrome:latest').inside {
-                        // Установка зависимостей внутри контейнера
-                        sh 'python3 -m pip install --upgrade pip'
-                        sh 'python3 -m pip install -r requirements.txt'
+                    // Поднимем контейнеры с Selenium
+                    sh 'docker-compose up -d'  // Запуск контейнеров в фоновом режиме
+                }
+            }
+        }
 
-                        // Запуск тестов
-                        sh 'pytest -n 2 tests/'
-                    }
+        stage('Install Dependencies in Selenium Container') {
+            steps {
+                script {
+                    // Установим зависимости внутри контейнера
+                    sh '''
+                        docker-compose exec selenium pip install --upgrade pip
+                        docker-compose exec selenium pip install -r /app/requirements.txt
+                    '''
+                }
+            }
+        }
+
+        stage('Run Selenium Tests') {
+            steps {
+                script {
+                    // Запуск тестов внутри контейнера с Selenium
+                    sh '''
+                        docker-compose exec selenium pytest --browser_name=chrome
+                    '''
+                }
+            }
+        }
+
+        stage('Stop Selenium Container') {
+            steps {
+                script {
+                    // Остановим контейнеры после выполнения тестов
+                    sh 'docker-compose down'
                 }
             }
         }

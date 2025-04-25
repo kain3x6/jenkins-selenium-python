@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # Название контейнера
+  selenium:
+    image: selenium/standalone-chrome:latest
+    ports:
+      - "4444:4444" # Порт для запуска
+    shm_size: '2g'
+    networks:
+      - selenium-network
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - selenium-network
+
+volumes:
+  jenkins_home:
+
+networks:
+  selenium-network:
+    driver: bridge
