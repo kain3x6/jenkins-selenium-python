@@ -1,11 +1,15 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_COMPOSE_FILE = 'docker-compose.yml'
+    }
+
     stages {
         stage('Checkout') {
             steps {
                 sshagent(['ssh_key']) {
-                     sh 'git clone git@github.com:kain3x6/jenkins-selenium-python.git'
+                    git credentialsId: 'ssh_key', url: 'git@github.com:kain3x6/jenkins-selenium-python.git'
                 }
             }
         }
@@ -14,7 +18,7 @@ pipeline {
             steps {
                 script {
                     // Поднимем контейнеры с Selenium
-                    sh 'docker-compose up -d'  // Запуск контейнеров в фоновом режиме
+                    sh 'docker-compose -f ${DOCKER_COMPOSE_FILE} up -d'  // Запуск контейнеров в фоновом режиме
                 }
             }
         }
@@ -24,8 +28,8 @@ pipeline {
                 script {
                     // Установим зависимости внутри контейнера
                     sh '''
-                        docker-compose exec selenium python3 -m pip install --upgrade pip
-                        docker-compose exec selenium python3 -m pip install -r requirements.txt
+                        docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install --upgrade pip"
+                        docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install -r requirements.txt"
                     '''
                 }
             }
@@ -36,7 +40,7 @@ pipeline {
                 script {
                     // Запуск тестов внутри контейнера с Selenium
                     sh '''
-                        docker-compose exec selenium pytest --browser_name=chrome
+                        docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "pytest --browser_name=chrome /tests"
                     '''
                 }
             }
@@ -46,7 +50,7 @@ pipeline {
             steps {
                 script {
                     // Остановим контейнеры после выполнения тестов
-                    sh 'docker-compose down'
+                    sh 'docker-compose -f ${DOCKER_COMPOSE_FILE} down'
                 }
             }
         }
