@@ -8,49 +8,59 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                sshagent(['ssh_key']) {
-                    git credentialsId: 'ssh_key', url: 'git@github.com:kain3x6/jenkins-selenium-python.git'
+                timeout(time: 2, unit: 'MINUTES') {
+                    sshagent(['ssh_key']) {
+                        git credentialsId: 'ssh_key', url: 'git@github.com:kain3x6/jenkins-selenium-python.git'
+                    }
                 }
             }
         }
 
         stage('Start Selenium Container') {
             steps {
-                script {
-                    // Поднимем контейнеры с Selenium
-                    sh 'docker-compose -f ${DOCKER_COMPOSE_FILE} up -d'  // Запуск контейнеров в фоновом режиме
+                timeout(time: 2, unit: 'MINUTES') {
+                    script {
+                        // Поднимем контейнеры с Selenium
+                        sh 'docker-compose -f ${DOCKER_COMPOSE_FILE} up -d'  // Запуск контейнеров в фоновом режиме
+                    }
                 }
             }
         }
 
         stage('Install Dependencies in Selenium Container') {
             steps {
-                script {
-                    // Установим зависимости внутри контейнера
-                    sh '''
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install --upgrade pip"
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install -r /mnt/requirements.txt"
-                    '''
+                timeout(time: 2, unit: 'MINUTES') {
+                    script {
+                        // Установим зависимости внутри контейнера
+                        sh '''
+                            docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install --upgrade pip"
+                            docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "python3 -m pip install -r /mnt/requirements.txt"
+                        '''
+                    }
                 }
             }
         }
 
         stage('Run Selenium Tests') {
             steps {
-                script {
-                    // Запуск тестов внутри контейнера с Selenium
-                    sh '''
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "pytest --browser_name=chrome /mnt/tests"
-                    '''
+                timeout(time: 2, unit: 'MINUTES') {
+                    script {
+                        // Запуск тестов внутри контейнера с Selenium
+                        sh '''
+                            docker-compose -f ${DOCKER_COMPOSE_FILE} exec selenium bash -c "pytest --browser_name=chrome /mnt/tests"
+                        '''
+                    }
                 }
             }
         }
 
         stage('Stop Selenium Container') {
             steps {
-                script {
-                    // Остановим контейнеры после выполнения тестов
-                    sh 'docker-compose -f ${DOCKER_COMPOSE_FILE} down'
+                timeout(time: 2, unit: 'MINUTES') {
+                    script {
+                        // Остановим контейнеры после выполнения тестов
+                        sh 'docker-compose -f ${DOCKER_COMPOSE_FILE} down'
+                    }
                 }
             }
         }
