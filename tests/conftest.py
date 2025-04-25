@@ -2,8 +2,6 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
 
 def pytest_addoption(parser):
     parser.addoption("--browser_name", action="store", default="chrome")
@@ -18,23 +16,19 @@ def browser_init(request):
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
 
-        service = ChromeService(ChromeDriverManager().install())
+        service = ChromeService(executable_path="/usr/bin/chromedriver")
+        driver = webdriver.Chrome(service=service, options=options)
 
-        driver = webdriver.Chrome(
-            service=service,
-            options=options
-        )
+    # elif browser_name == "firefox":
+    #     options = webdriver.FirefoxOptions()
+    #     options.add_argument("--headless")
 
-    elif browser_name == "firefox":
-        options = webdriver.FirefoxOptions()
-        options.add_argument("--headless")
+    #     service = FirefoxService(GeckoDriverManager().install())
 
-        service = FirefoxService(GeckoDriverManager().install())
-
-        driver = webdriver.Firefox(
-            service=service,
-            options=options
-        )
+    #     driver = webdriver.Firefox(
+    #         service=service,
+    #         options=options
+    #     )
 
     else:
         raise pytest.UsageError(f"Unsupported browser: {browser_name}")

@@ -10,21 +10,18 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Run Selenium Tests in Docker') {
             steps {
-                sh 'python3 -m pip install --upgrade pip'
-                sh 'python3 -m pip install -r requirements.txt'
-            }
-        }
+                script {
+                    // Запускаем Docker контейнер с Selenium, в котором уже установлен Chrome и ChromeDriver
+                    docker.image('selenium/standalone-chrome:latest').inside {
+                        // Установка зависимостей внутри контейнера
+                        sh 'python3 -m pip install --upgrade pip'
+                        sh 'python3 -m pip install -r requirements.txt'
 
-        stage('Run Selenium Tests') {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    sh '''
-                        Xvfb :99 -screen 0 1920x1080x24 &
-                        export DISPLAY=:99
-                        python3 -m pytest --browser_name=chrome tests
-                    '''
+                        // Запуск тестов
+                        sh 'pytest -n 2 tests/'
+                    }
                 }
             }
         }
