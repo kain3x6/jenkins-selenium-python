@@ -20,4 +20,4 @@ WORKDIR /app
 COPY . .
 
 # Команда по умолчанию (можно поменять на свою)
-CMD ["pytest", "--browser_name=chrome"]
+CMD ["pytest -n 2", "--browser_name=chrome"]

@@ -17,5 +17,5 @@ class TestProducts:
         greencard_page.add_to_cart(product)
         greencard_page.open_cart_list()
         greencard_page.proceed_to_checkout()
-        sleep(3)
+        sleep(1)
         assert True

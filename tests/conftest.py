@@ -14,12 +14,10 @@ def browser_init(request):
 
     if browser_name == "chrome":
         options = webdriver.ChromeOptions()
-        options.add_argument("--headless=new")  # вместо просто "--headless"
+        options.add_argument("--headless=new")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-        options.binary_location = "/usr/bin/google-chrome"
 
-        # Использование webdriver-manager для получения пути к chromedriver
         service = ChromeService(ChromeDriverManager().install())
 
         driver = webdriver.Chrome(
@@ -30,8 +28,7 @@ def browser_init(request):
     elif browser_name == "firefox":
         options = webdriver.FirefoxOptions()
         options.add_argument("--headless")
-        
-        # Использование webdriver-manager для получения пути к geckodriver
+
         service = FirefoxService(GeckoDriverManager().install())
 
         driver = webdriver.Firefox(
