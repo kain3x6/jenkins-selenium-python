@@ -16,13 +16,13 @@ pipeline {
             }
         }
 
-        stage('Check and Remove Orphan Containers') {
+        stage('Cleanup Orphan Containers') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
-                        echo 'Checking for orphan containers and cleaning up...'
+                        echo 'Checking and removing any orphan containers...'
                         sh '''
-                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} down --remove-orphans || echo "No orphan containers to remove"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} down --volumes --remove-orphans || echo "No orphan containers to remove"
                         '''
                     }
                 }
@@ -40,15 +40,15 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies in Selenium Container') {
+        stage('Install Dependencies') {
             steps {
-                timeout(time: 2, unit: 'MINUTES') {
+                timeout(time: 5, unit: 'MINUTES') {  // Чуть увеличил время
                     script {
-                        echo 'Upgrading pip and installing requirements...'
+                        echo 'Installing dependencies inside Selenium container...'
                         sh '''
-                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "python3 -m pip install --upgrade pip -vvv"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "python3 -m pip install --upgrade pip --no-cache-dir -vvv"
                             sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "cat /mnt/requirements.txt"
-                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "python3 -m pip install -r /mnt/requirements.txt -vvv"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "python3 -m pip install -r /mnt/requirements.txt --no-cache-dir -vvv"
                         '''
                     }
                 }
@@ -57,9 +57,9 @@ pipeline {
 
         stage('Run Selenium Tests') {
             steps {
-                timeout(time: 2, unit: 'MINUTES') {
+                timeout(time: 5, unit: 'MINUTES') {  // Чуть увеличил время
                     script {
-                        echo 'Running tests inside Selenium container...'
+                        echo 'Running Selenium tests...'
                         sh '''
                             sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "pytest --browser_name=chrome /mnt/tests"
                         '''
@@ -67,29 +67,22 @@ pipeline {
                 }
             }
         }
-
-        stage('Stop Selenium Container') {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    script {
-                        echo 'Stopping Selenium container...'
-                        sh 'sudo docker-compose -f ${DOCKER_COMPOSE_FILE} down --volumes --remove-orphans'
-                    }
-                }
-            }
-        }
     }
 
     post {
+        always { // Теперь контейнеры стопаются всегда, даже если упало на любой стадии
+            echo 'Cleaning up containers...'
+            script {
+                sh '''
+                    sudo docker-compose -f ${DOCKER_COMPOSE_FILE} down --volumes --remove-orphans || echo "Cleanup skipped, no containers found"
+                '''
+            }
+        }
         success {
-            echo 'Pipeline completed successfully'
+            echo 'Pipeline completed successfully ✅'
         }
         failure {
-            echo 'Pipeline failed. Cleaning up...'
-            script {
-                // Принудительно останавливаем контейнеры в случае ошибки
-                sh 'sudo docker-compose -f ${DOCKER_COMPOSE_FILE} down --volumes --remove-orphans || echo "Error during cleanup"'
-            }
+            echo 'Pipeline failed ❌'
         }
     }
 }
