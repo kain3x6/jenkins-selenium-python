@@ -16,11 +16,14 @@ pipeline {
             }
         }
 
-        stage('Log docker-compose file') {
+        stage('Check and Remove Orphan Containers') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
-                        sh 'cat ${DOCKER_COMPOSE_FILE}'
+                        echo 'Checking for orphan containers and cleaning up...'
+                        sh '''
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} down --remove-orphans || echo "No orphan containers to remove"
+                        '''
                     }
                 }
             }
@@ -30,6 +33,7 @@ pipeline {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
+                        echo 'Starting Selenium container...'
                         sh 'sudo docker-compose -f ${DOCKER_COMPOSE_FILE} up -d'
                     }
                 }
@@ -40,9 +44,11 @@ pipeline {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
+                        echo 'Upgrading pip and installing requirements...'
                         sh '''
-                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "python3 -m pip install --upgrade pip"
-                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "python3 -m pip install -r /mnt/requirements.txt"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "python3 -m pip install --upgrade pip -vvv"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "cat /mnt/requirements.txt"
+                            sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "python3 -m pip install -r /mnt/requirements.txt -vvv"
                         '''
                     }
                 }
@@ -53,6 +59,7 @@ pipeline {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
+                        echo 'Running tests inside Selenium container...'
                         sh '''
                             sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec -T selenium bash -c "pytest --browser_name=chrome /mnt/tests"
                         '''
@@ -65,6 +72,7 @@ pipeline {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     script {
+                        echo 'Stopping Selenium container...'
                         sh 'sudo docker-compose -f ${DOCKER_COMPOSE_FILE} down --volumes --remove-orphans'
                     }
                 }
@@ -77,7 +85,11 @@ pipeline {
             echo 'Pipeline completed successfully'
         }
         failure {
-            echo 'Pipeline failed'
+            echo 'Pipeline failed. Cleaning up...'
+            script {
+                // Принудительно останавливаем контейнеры в случае ошибки
+                sh 'sudo docker-compose -f ${DOCKER_COMPOSE_FILE} down --volumes --remove-orphans || echo "Error during cleanup"'
+            }
         }
     }
 }
